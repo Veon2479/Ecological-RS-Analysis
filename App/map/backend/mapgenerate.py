@@ -9,7 +9,7 @@ startmap = folium.Map(location=MINSK_LOCATION, zoom_start=9)
 
 
 def MapGenerate(filename):
-    map = startmap
+    map = folium.Map(location=MINSK_LOCATION, zoom_start=7)
     points = GetPoints('./map/backend/result.json')
     HeatMap(points, radius=10).add_to(map)
     map.save(filename)
