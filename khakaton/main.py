@@ -37,8 +37,6 @@ area_BY = AreaDefinition(
         6250000,
     ))
 
-lons, lats = area_BY.get_lonlats()
-
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     img = cv2.imread('night_overview.tif')
@@ -81,8 +79,7 @@ if __name__ == '__main__':
     jsonResult = []
 
     height, width, _ = res.shape
-    deltaLat = (area_BY.area_extent_ll[1] - area_BY.area_extent_ll[3]) / height
-    deltaLon = (area_BY.area_extent_ll[2] - area_BY.area_extent_ll[0]) / width
+    lons, lats = area_BY.get_lonlats()
 
     for y in range(height):
         for x in range(width):
@@ -92,13 +89,9 @@ if __name__ == '__main__':
             if value > threshold:
                 hmap_res[y, x] = [value, value, value]
 
-                # write to json
-                lat = deltaLat * y + area_BY.area_extent_ll[3]
-                lon = deltaLon * x + area_BY.area_extent_ll[0]
-
                 jsonObj = {"val": valueNorm,
-                           "lat": lat,
-                           "lon": lon}
+                           "lat": lats[y, x],
+                           "lon": lons[y, x]}
                 jsonResult.append(jsonObj)
             else:
                 hmap_res[y, x] = [0, 0, 0]
