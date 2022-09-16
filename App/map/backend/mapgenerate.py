@@ -13,6 +13,7 @@ import geojsoncontour
 import matplotlib.pyplot as plt
 import scipy as sp
 import  scipy.ndimage
+import datetime
 
 MINSK_LOCATION = [53.893009, 27.567444]
 
@@ -38,8 +39,10 @@ def MapGenerate(filename):
     clouds_pollution_group = folium.FeatureGroup(name="Clouds pollution", show=False)
     clouds_pollution_group.add_to(map)
 
-    # ISS position
-    map.add_child(ISS())
+    # ISS position view generation
+    ISS_position_group = folium.FeatureGroup(name="ISS position", show=False)
+    ISS(ISS_position_group)
+    ISS_position_group.add_to(map)
 
     folium.LayerControl(position="bottomright").add_to(map)
 
@@ -57,13 +60,32 @@ def GetPoints(filename):
     return points
 
 
-def ISS():
+def ISS(map):
     path = "https://api.wheretheiss.at/v1/satellites/25544/positions?timestamps="
     timestamp = int(time.time())
-    path += str(timestamp)
+
+    for i in range(1, 12):
+        path += str(timestamp) + ","
+        timestamp += 450
+
     response = requests.get(path)
     position = json.loads(response.text)
-    return folium.Marker(location=[position[0]['latitude'], position[0]['longitude']], popup="ISS", tooltip="ISS")
+
+    # Draw line for ISS markers
+    linepos = pandas.json_normalize(position)
+    linepos = linepos[['latitude', 'longitude']].values.tolist()
+    map.add_child(folium.PolyLine(locations=linepos))
+
+    # Draw ISS markers
+    for pos in position:
+        tip = datetime.datetime.fromtimestamp(int(pos['timestamp']))
+
+        if pos['timestamp'] == position[0]['timestamp']:
+            icon = folium.features.CustomIcon("./map/static/map/img/ISS.png", icon_size=[30, 30])
+        else:
+            icon = folium.features.CustomIcon("./map/static/map/img/next.png", icon_size=[20, 20])
+
+        map.add_child(folium.Marker(location=[pos['latitude'], pos['longitude']], icon=icon, popup="ISS", tooltip="Will be here at " + str(tip)))
 
 def LightPollution(map):
     points = GetPoints('./map/backend/result.json')
