@@ -12,7 +12,7 @@ import branca
 import geojsoncontour
 import matplotlib.pyplot as plt
 import scipy as sp
-import  scipy.ndimage
+import scipy.ndimage
 import datetime
 
 MINSK_LOCATION = [53.893009, 27.567444]
@@ -64,23 +64,35 @@ def ISS(map):
     path = "https://api.wheretheiss.at/v1/satellites/25544/positions?timestamps="
     timestamp = int(time.time())
 
-    for i in range(1, 12):
+    for i in range(1, 15):
         path += str(timestamp) + ","
         timestamp += 450
 
+    path = path[:-1]
+
     response = requests.get(path)
-    position = json.loads(response.text)
+    positions = json.loads(response.text)
 
     # Draw line for ISS markers
-    linepos = pandas.json_normalize(position)
-    linepos = linepos[['latitude', 'longitude']].values.tolist()
-    map.add_child(folium.PolyLine(locations=linepos))
+    line_points = pandas.json_normalize(positions)
+    line_points = line_points[['latitude', 'longitude']].values.tolist()
+
+    sections = []
+
+    for i in range(0, len(line_points) - 1):
+        if abs(line_points[i][1] - line_points[i + 1][1]) > 200:
+            sections.append(i + 1)
+
+    lines = np.split(line_points, indices_or_sections=sections)
+
+    for line in lines:
+        map.add_child(folium.PolyLine(locations=line))
 
     # Draw ISS markers
-    for pos in position:
+    for pos in positions:
         tip = datetime.datetime.fromtimestamp(int(pos['timestamp']))
 
-        if pos['timestamp'] == position[0]['timestamp']:
+        if pos['timestamp'] == positions[0]['timestamp']:
             icon = folium.features.CustomIcon("./map/static/map/img/ISS.png", icon_size=[30, 30])
         else:
             icon = folium.features.CustomIcon("./map/static/map/img/next.png", icon_size=[20, 20])
