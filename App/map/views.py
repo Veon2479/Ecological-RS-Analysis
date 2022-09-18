@@ -6,3 +6,7 @@ from .backend import mapgenerate as mapgen
 def index(request):
     mapgen.MapGenerate('./map/templates/map/index.html')
     return render(request, 'map/light.html')
+
+def starmap(request):
+
+    return render(request, 'starmap/starmap.html')
