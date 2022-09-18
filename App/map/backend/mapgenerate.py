@@ -3,10 +3,9 @@ import folium
 import pandas
 import requests
 import time
-
 from folium import plugins
-from folium.plugins import HeatMap
 import numpy as np
+from folium.plugins import MousePosition
 from scipy.interpolate import griddata
 import branca
 import geojsoncontour
@@ -14,53 +13,56 @@ import matplotlib.pyplot as plt
 import scipy as sp
 import scipy.ndimage
 import datetime
+from . import meteodata as md
 
 MINSK_LOCATION = [53.893009, 27.567444]
 
 startmap = folium.Map(location=MINSK_LOCATION, zoom_start=9)
-
-
 def MapGenerate(filename):
-    map = folium.Map(location=MINSK_LOCATION, zoom_start=7)
+    m = folium.Map(location=MINSK_LOCATION, zoom_start=7)
 
-    # Add the legend to the map
-    plugins.Fullscreen(position='bottomright', force_separate_button=True).add_to(map)
+    # Add the full screen button to the map
+    plugins.Fullscreen(position='bottomright', force_separate_button=True).add_to(m)
+
+    # Add Mouse Position to get the coordinate (Lat, Long) for a mouse over on the map
+    formatter = "function(num) {return L.Util.formatNum(num, 6);};"
+    mouse_position = MousePosition(
+        position='topright',
+        separator=' Lon: ',
+        empty_string='NaN',
+        lng_first=False,
+        num_digits=20,
+        prefix='Lat:',
+        lat_formatter=formatter,
+        lng_formatter=formatter,
+    ).add_to(m)
+
 
     # Light pollution view generation
     light_pollution_group = folium.FeatureGroup(name="Light pollution", show=True)
-    LightPollution(map).add_to(light_pollution_group)
-    light_pollution_group.add_to(map)
+    LightPollution(light_pollution_group)
+    m.add_child(light_pollution_group)
 
     # Aerosol pollution view generation
-    aerosol_pollution_group = folium.FeatureGroup(name="Aerosol pollution", show=False)
-    aerosol_pollution_group.add_to(map)
+    aerosol_pollution_group = folium.FeatureGroup(name="Aerosol pollution", show=False, control=True)
+    m.add_child(aerosol_pollution_group)
 
     # Clouds pollution view generation
     clouds_pollution_group = folium.FeatureGroup(name="Clouds pollution", show=False)
-    clouds_pollution_group.add_to(map)
+    m.add_child(clouds_pollution_group)
 
     # ISS position view generation
     ISS_position_group = folium.FeatureGroup(name="ISS position", show=False)
     ISS(ISS_position_group)
-    ISS_position_group.add_to(map)
+    m.add_child(ISS_position_group)
 
-    folium.LayerControl(position="bottomright").add_to(map)
+    # Add layer control to the map
+    folium.LayerControl(position="topright", sortLayers=True).add_to(m)
 
-    map.save(filename)
-    return map
+    m.save(filename)
+    return m
 
-
-def GetPoints(filename):
-    file = open(filename)
-    content = json.load(file)
-    content = pandas.json_normalize(content)
-    points = content[['lat', 'lon', 'val']]
-    points.head()
-    result = points.values.tolist()
-    return points
-
-
-def ISS(map):
+def ISS(ISS_map):
     path = "https://api.wheretheiss.at/v1/satellites/25544/positions?timestamps="
     timestamp = int(time.time())
 
@@ -80,74 +82,27 @@ def ISS(map):
     sections = []
 
     for i in range(0, len(line_points) - 1):
-        if abs(line_points[i][1] - line_points[i + 1][1]) > 200:
+        if abs(line_points[i][1] - line_points[i + 1][1]) > 180:
             sections.append(i + 1)
 
     lines = np.split(line_points, indices_or_sections=sections)
 
     for line in lines:
-        map.add_child(folium.PolyLine(locations=line))
+        ISS_map.add_child(folium.PolyLine(locations=line))
 
     # Draw ISS markers
     for pos in positions:
-        tip = datetime.datetime.fromtimestamp(int(pos['timestamp']))
+        ISS_time = datetime.datetime.fromtimestamp(int(pos['timestamp']))
+        tooltip = "International Space Station"
+        tip = "Will be here at " + str(ISS_time)
 
         if pos['timestamp'] == positions[0]['timestamp']:
             icon = folium.features.CustomIcon("./map/static/map/img/ISS.png", icon_size=[30, 30])
+            ISS_map.add_child(folium.Marker(location=[pos['latitude'], pos['longitude']], icon=icon, popup=tip, tooltip=tooltip))
         else:
-            icon = folium.features.CustomIcon("./map/static/map/img/next.png", icon_size=[20, 20])
-
-        map.add_child(folium.Marker(location=[pos['latitude'], pos['longitude']], icon=icon, popup="ISS", tooltip="Will be here at " + str(tip)))
-
-def LightPollution(map):
-    points = GetPoints('./map/backend/result.json')
-
-    # Setup colormap
-    colors = ['black', 'gray', 'blue', 'green', 'yellow', 'orange', 'red', 'brown']
-    levels = len(colors)
-    cm = branca.colormap.LinearColormap(colors, vmin=0, vmax=1).to_step(levels)
-
-    # Convertation to array
-    x = points['lon'].tolist()
-    y = points['lat'].tolist()
-    z = points['val'].tolist()
-
-    # Make a grid
-    x_arr = np.linspace(np.min(x), np.max(x), 500)
-    y_arr = np.linspace(np.min(y), np.max(y), 500)
-    x_mesh, y_mesh = np.meshgrid(x_arr, y_arr)
-
-    # Grid the elevation (Edited on March 30th, 2020)
-    z_mesh = griddata((x, y), z, (x_mesh, y_mesh), method='linear')
-
-    # Use Gaussian filter to smoothen the contour
-    sigma = [5, 5]
-    z_mesh = sp.ndimage.filters.gaussian_filter(z_mesh, sigma, mode='constant')
-
-    # Create the contour
-    contourf = plt.contourf(x_mesh, y_mesh, z_mesh, levels, alpha=0.5, colors=colors, linestyles='solid', vmin=0, vmax=1)
-
-    # Convert matplotlib contourf to geojson
-    geojson = geojsoncontour.contourf_to_geojson(
-        contourf=contourf,
-        min_angle_deg=3.0,
-        ndigits=5,
-        stroke_width=1,
-        fill_opacity=0.1)
+            ISS_map.add_child(folium.CircleMarker(location=[pos['latitude'], pos['longitude']], color="blue", fill_color="Blue", radius=7, popup=tip, tooltip=tooltip))
 
 
-    # Plot the contour on Folium map
-    light_pollution_map = folium.GeoJson(
-        geojson,
-        style_function=lambda x: {
-            'color': x['properties']['stroke'],
-            'weight': x['properties']['stroke-width'],
-            'fillColor': x['properties']['fill'],
-            'opacity': 0.5,
-        })
-
-    # Add the colormap to the folium map for legend
-    cm.caption = 'Light pollution'
-    map.add_child(cm)
-
-    return light_pollution_map
+def LightPollution(light_pollution_map):
+    points = md.get_param('night_overview')
+    light_pollution_map.add_child(folium.plugins.HeatMap(points, radius=10))
