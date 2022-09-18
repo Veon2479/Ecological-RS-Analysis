@@ -20,6 +20,6 @@ def starmap(request):
         lat = MINSK_LOCATION[0]
         lon = MINSK_LOCATION[1]
     path = starmapgen(lat, lon, './map/templates/starmap/index.html')
-    path = '/starmap/example.jpg'
+    # path = '/starmap/example.jpg'
     data = {"lat": lat, "lon": lon, "path": path}
     return render(request, 'starmap/starmap.html', data)
