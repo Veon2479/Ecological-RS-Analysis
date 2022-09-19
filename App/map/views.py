@@ -13,7 +13,7 @@ def index(request):
 def starmap(request):
     lat = request.GET.get("lat", MINSK_LOCATION[0])
     lon = request.GET.get("lon", MINSK_LOCATION[1])
-    if (not isinstance(lat, float)) or (not isinstance(lon, float)):
+    if (not lat.isdigit()) or (not lon.isdigit()):
         lat = MINSK_LOCATION[0]
         lon = MINSK_LOCATION[1]
     path = starmapgen(lat, lon, './map/templates/starmap/index.html')
