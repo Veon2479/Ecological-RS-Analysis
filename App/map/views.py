@@ -19,10 +19,18 @@ def starmap(request):
         lat = request.GET.get("lat", MINSK_LOCATION[0])
         lon = request.GET.get("lon", MINSK_LOCATION[1])
     finally:
-        if (not str(lat).isdigit()) or (not str(lon).isdigit()):
+        if (not is_float(lat)) or (not is_float(lon)):
             lat = MINSK_LOCATION[0]
             lon = MINSK_LOCATION[1]
     path = starmapgen(lat, lon, './map/templates/starmap/index.html')
     path = '/starmap/example.jpg'
     data = {"lat": lat, "lon": lon, "path": path}
     return render(request, 'starmap/starmap.html', data)
+
+
+def is_float(num):
+    try:
+        float(num)
+        return True
+    except ValueError:
+        return False
