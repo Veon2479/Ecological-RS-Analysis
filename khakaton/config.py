@@ -31,7 +31,10 @@ parameters = dict(
     fog=dict(name='night_fog', lower=np.array([0, 10, 0]),
              upper=np.array([255, 255, 255]), threshold=1E-12, value_func=anal.value_fun_fog),
     dust=dict(name='dust', lower=np.array([140, 0, 180]),
-              upper=np.array([255, 140, 255]), threshold=1E-12, value_func=anal.value_fun_dust)
+              upper=np.array([255, 140, 255]), threshold=1E-12, value_func=anal.value_fun_dust),
+    cloudtop = dict (name = 'cloudtop', lower = np.array([0, 114, 114]),
+                     upper = np.array([255, 255, 255]), threshold = 0, value_func = 0)
+
     # dust=dict(name='dust', lower=np.array([199, 20, 133]),
     #               upper=np.array([255, 192, 203]), threshold=50)
 )
