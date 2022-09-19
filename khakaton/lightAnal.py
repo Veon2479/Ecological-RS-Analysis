@@ -1,6 +1,11 @@
 import numpy as np
 
 
+def value_fun_cloudtop(color_array):
+
+    return (color_array[0] - 114) / float(255 - 114)
+
+
 def value_fun_dust(color_array):
     r = color_array[2]
     r = (r - 180) / (255 - 180.)

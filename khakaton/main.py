@@ -99,7 +99,8 @@ if __name__ == "__main__":
 
     # res = get_param('night_overview')
     # res = get_param('fog')
-    res = get_param('dust')
+    # res = get_param('dust')
+    res = get_param('cloudtop')
 
     for i in range(len(res)):
         print(res[i])
