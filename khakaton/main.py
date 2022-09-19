@@ -74,6 +74,10 @@ def get_param(param_name):
     :return: array [['lat', 'lon', 'val']]
     """
 
+    # The worst caching solution
+    if not np.array_equal(cfg.parameters[param_name]['lastArray'], []):
+        return cfg.parameters[param_name]['lastArray']
+
     # get params
     param = cfg.parameters[param_name]
     # read image
@@ -91,7 +95,9 @@ def get_param(param_name):
     cv2.imwrite(cfg.FULL_PATH + param['name'] + '_mask' + cfg.EXT, mask)
     cv2.imwrite(cfg.FULL_PATH + param['name'] + '_result' + cfg.EXT, img)
     # cvt to json
-    return tif_to_array(img, param)
+    # Anc caching
+    cfg.parameters[param_name]['lastArray'] = tif_to_array(img, param)
+    return cfg.parameters[param_name]['lastArray']
 
 
 # (Example call)

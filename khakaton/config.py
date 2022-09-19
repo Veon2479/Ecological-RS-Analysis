@@ -27,13 +27,17 @@ EXT = '.tif'
 
 parameters = dict(
     night_overview=dict(name='night_overview', lower=np.array([0, 75, 75]),
-                        upper=np.array([255, 255, 255]), threshold=1E-12, value_func=anal.value_fun_light),
+                        upper=np.array([255, 255, 255]), threshold=1E-12, value_func=anal.value_fun_light,
+                        lastArray = []),
     fog=dict(name='night_fog', lower=np.array([0, 10, 0]),
-             upper=np.array([255, 255, 255]), threshold=1E-12, value_func=anal.value_fun_fog),
+             upper=np.array([255, 255, 255]), threshold=1E-12, value_func=anal.value_fun_fog,
+             lastArray = []),
     dust=dict(name='dust', lower=np.array([140, 0, 180]),
-              upper=np.array([255, 140, 255]), threshold=1E-12, value_func=anal.value_fun_dust),
+              upper=np.array([255, 140, 255]), threshold=1E-12, value_func=anal.value_fun_dust,
+              lastArray = []),
     cloudtop=dict(name='cloudtop', lower=np.array([0, 114, 114]),
-                  upper=np.array([255, 255, 255]), threshold=1E-12, value_func=anal.value_fun_cloudtop)
+                  upper=np.array([255, 255, 255]), threshold=1E-12, value_func=anal.value_fun_cloudtop,
+                  lastArray = [])
 
     # dust=dict(name='dust', lower=np.array([199, 20, 133]),
     #               upper=np.array([255, 192, 203]), threshold=50)
