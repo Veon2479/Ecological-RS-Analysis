@@ -187,3 +187,6 @@ fabric.properties
 *.iml
 *.iml
 khakaton/.idea/khakaton.iml
+*.iml
+*.iml
+*.xml
