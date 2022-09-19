@@ -4,9 +4,11 @@ import folium
 import pandas
 import requests
 import time
+from branca.element import MacroElement
 from folium import plugins
 import numpy as np
 from folium.plugins import MousePosition
+from jinja2 import Template
 from scipy.interpolate import griddata
 import branca
 import geojsoncontour
@@ -28,7 +30,7 @@ def MapGenerate(filename):
     plugins.Fullscreen(position='bottomright', force_separate_button=True).add_to(m)
 
     # Add Mouse Position to get the coordinate (Lat, Long) for a mouse over on the map
-    formatter = "function(num) {return L.Util.formatNum(num, 6);};"
+    formatter = "function(num) {return L.Util.formatNum(num, 6) + ' º ' ;};"
     mouse_position = MousePosition(
         position='topright',
         separator=' Lon: ',
@@ -39,6 +41,9 @@ def MapGenerate(filename):
         lat_formatter=formatter,
         lng_formatter=formatter,
     ).add_to(m)
+
+    m.add_child(LatLngPopup())
+
 
     # Light pollution view generation
     light_pollution_group = folium.FeatureGroup(name="Light pollution", show=True)
@@ -173,3 +178,29 @@ def flatten(l):
             yield from flatten(el)
         else:
             yield el
+
+class LatLngPopup(MacroElement):
+    """
+    When one clicks on a Map that contains a LatLngPopup,
+    a popup is shown that displays the latitude and longitude of the pointer.
+    """
+    _template = Template(u"""
+            {% macro script(this, kwargs) %}
+                var {{this.get_name()}} = L.popup();
+                function latLngPop(e) {
+                    {{this.get_name()}}
+                        .setLatLng(e.latlng)
+                        .setContent("Latitude: " + e.latlng.lat.toFixed(4) +
+                                    "<br>Longitude: " + e.latlng.lng.toFixed(4) + 
+                                    "<br>View the star map " + "<a href=\\"/starmap?lat=" + e.latlng.lat + "&lon=" + e.latlng.lng + "\\">here</a>")
+                        .openOn({{this._parent.get_name()}});
+                    parent.document.getElementById("id_lng").value = e.latlng.lng.toFixed(4);
+                    parent.document.getElementById("id_lat").value = e.latlng.lat.toFixed(4);
+                    }
+                {{this._parent.get_name()}}.on('click', latLngPop);
+            {% endmacro %}
+            """)  # noqa
+
+    def __init__(self):
+        super(LatLngPopup, self).__init__()
+        self._name = 'LatLngPopup'

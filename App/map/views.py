@@ -6,7 +6,7 @@ from .backend.mapgenerate import MINSK_LOCATION
 
 # Create your views here.
 
-def index(request):
+def map(request):
     mapgen.MapGenerate('./map/templates/map/index.html')
     return render(request, 'map/light.html')
 
