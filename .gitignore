@@ -185,3 +185,10 @@ fabric.properties
 
 # idea folder, uncomment if you don't need it
 # .idea
+*.xml
+*.iml
+*.iml
+khakaton/.idea/khakaton.iml
+*.iml
+*.iml
+*.xml
