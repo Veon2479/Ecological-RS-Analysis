@@ -60,14 +60,14 @@ def MapGenerate(filename):
     m.add_child(dust_pollution_group)
 
     # Fog pollution view generation
-    #fog_pollution_group = folium.FeatureGroup(name="Fog pollution", show=False)
-    #Fog(fog_pollution_group, m)
-    #m.add_child(fog_pollution_group)
+    fog_pollution_group = folium.FeatureGroup(name="Fog pollution", show=False)
+    Fog(fog_pollution_group, m)
+    m.add_child(fog_pollution_group)
 
     # ISS position view generation
-    #ISS_position_group = folium.FeatureGroup(name="ISS position", show=False)
-    #ISS(ISS_position_group)
-    #m.add_child(ISS_position_group)
+    ISS_position_group = folium.FeatureGroup(name="ISS position", show=False)
+    ISS(ISS_position_group)
+    m.add_child(ISS_position_group)
 
     # Add layer control to the map
     folium.LayerControl(position="topright", sortLayers=True).add_to(m)
@@ -142,7 +142,7 @@ def Fog(fog_pollution_map, map):
     z = list(flatten(res[2]))
 
     # Setup colormap
-    colors = ['black', 'gray', 'blue', 'green', 'yellow', 'orange', 'red', 'brown']
+    colors = ['ghostwhite', 'thistle', 'plum', 'violet', 'm', 'fuchsia', 'magenta', 'orchid', 'purple', 'darkmagenta', 'indigo']
     cm = branca.colormap.LinearColormap(colors, vmin=0, vmax=1).to_step(len(colors))
     cm.caption = 'Fog pollution'
 
