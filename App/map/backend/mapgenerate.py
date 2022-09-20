@@ -46,22 +46,28 @@ def MapGenerate(filename):
 
     # Light pollution view generation
     light_pollution_group = folium.FeatureGroup(name="Light pollution", show=True)
-    LightPollution(light_pollution_group, m)
+    Light(light_pollution_group, m)
     m.add_child(light_pollution_group)
 
     # Clouds pollution view generation
-    clouds_pollution_group = folium.FeatureGroup(name="Clouds pollution", show=True)
+    clouds_pollution_group = folium.FeatureGroup(name="Clouds pollution", show=False)
     Cloud(clouds_pollution_group, m)
     m.add_child(clouds_pollution_group)
 
-    # Aerosol pollution view generation
-    aerosol_pollution_group = folium.FeatureGroup(name="Aerosol pollution", show=False, control=True)
-    m.add_child(aerosol_pollution_group)
+    # Dust pollution view generation
+    dust_pollution_group = folium.FeatureGroup(name="Dust pollution", show=False)
+    Dust(dust_pollution_group, m)
+    m.add_child(dust_pollution_group)
+
+    # Fog pollution view generation
+    #fog_pollution_group = folium.FeatureGroup(name="Fog pollution", show=False)
+    #Fog(fog_pollution_group, m)
+    #m.add_child(fog_pollution_group)
 
     # ISS position view generation
-    ISS_position_group = folium.FeatureGroup(name="ISS position", show=False)
-    ISS(ISS_position_group)
-    m.add_child(ISS_position_group)
+    #ISS_position_group = folium.FeatureGroup(name="ISS position", show=False)
+    #ISS(ISS_position_group)
+    #m.add_child(ISS_position_group)
 
     # Add layer control to the map
     folium.LayerControl(position="topright", sortLayers=True).add_to(m)
@@ -70,7 +76,7 @@ def MapGenerate(filename):
     return m
 
 
-def LightPollution(light_pollution_map, map):
+def Light(light_pollution_map, map):
     # Load points data
     points = md.get_param('night_overview')
     res = np.split(points, [1, 2, 3], axis=1)
@@ -106,6 +112,44 @@ def Cloud(cloud_pollution_map, map):
     cloud_pollution_map.add_child(gj)
     map.add_child(cm)
 
+
+def Dust(dust_pollution_map, map):
+    # Load points data
+    points = md.get_param('dust')
+    res = np.split(points, [1, 2, 3], axis=1)
+    x = list(flatten(res[1]))
+    y = list(flatten(res[0]))
+    z = list(flatten(res[2]))
+
+    # Setup colormap
+    colors = ['lemonchiffon', 'khaki', 'yellow', 'gold', 'orange', 'darkorange', 'orangered', 'red', 'firebrick', 'darkred']
+    cm = branca.colormap.LinearColormap(colors, vmin=0, vmax=1).to_step(len(colors))
+    cm.caption = 'Dust pollution'
+
+    gj = CreateGeoJson(x, y, z, colors)
+
+    dust_pollution_map.add_child(gj)
+    map.add_child(cm)
+
+
+def Fog(fog_pollution_map, map):
+
+    # Load points data
+    points = md.get_param('fog')
+    res = np.split(points, [1, 2, 3], axis=1)
+    x = list(flatten(res[1]))
+    y = list(flatten(res[0]))
+    z = list(flatten(res[2]))
+
+    # Setup colormap
+    colors = ['black', 'gray', 'blue', 'green', 'yellow', 'orange', 'red', 'brown']
+    cm = branca.colormap.LinearColormap(colors, vmin=0, vmax=1).to_step(len(colors))
+    cm.caption = 'Fog pollution'
+
+    gj = CreateGeoJson(x, y, z, colors)
+
+    fog_pollution_map.add_child(gj)
+    map.add_child(cm)
 
 def CreateGeoJson(x, y, z, colors):
     levels = len(colors)
