@@ -19,10 +19,8 @@ area = AreaDefinition(
     ))
 
 SRC_PATH = os.path.dirname(os.path.realpath(__file__))
-REL_PATH = '\\image_scr\\'
-FULL_PATH_A = (SRC_PATH + REL_PATH).replace('\\', '/')
-FULL_PATH = 'C:/Users/artem/OneDrive/work/python proj/Ecological-RS-Analysis/khakaton/image_src/'  # TODO fix this shit!
-TEST = FULL_PATH_A == FULL_PATH
+REL_PATH = '\\image_src\\'
+FULL_PATH = (SRC_PATH + REL_PATH).replace('\\', '/')
 EXT = '.tif'
 
 parameters = dict(
