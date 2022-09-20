@@ -1,7 +1,7 @@
 import numpy as np
 from pyresample.geometry import AreaDefinition
 import cv2
-import lightAnal as anal
+from . import lightAnal as anal
 import os
 
 area = AreaDefinition(
@@ -19,9 +19,9 @@ area = AreaDefinition(
     ))
 
 SRC_PATH = os.path.dirname(os.path.realpath(__file__))
-REL_PATH = '\\image_scr\\'
+REL_PATH = '\\App\\map\\meteo_data\\'
 FULL_PATH_A = (SRC_PATH + REL_PATH).replace('\\', '/')
-FULL_PATH = 'C:/Users/artem/OneDrive/work/python proj/Ecological-RS-Analysis/khakaton/image_src/'  # TODO fix this shit!
+FULL_PATH = 'D:/BSUIR/5 sem/Digital twins/Ecological-RS-Analysis/App/map/meteo_data/'  # TODO fix this shit!
 TEST = FULL_PATH_A == FULL_PATH
 EXT = '.tif'
 

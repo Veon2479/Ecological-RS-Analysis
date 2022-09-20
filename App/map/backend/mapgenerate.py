@@ -44,20 +44,19 @@ def MapGenerate(filename):
 
     m.add_child(LatLngPopup())
 
-
     # Light pollution view generation
     light_pollution_group = folium.FeatureGroup(name="Light pollution", show=True)
-    color_legend = LightPollution(light_pollution_group)
-    m.add_child(color_legend)
+    LightPollution(light_pollution_group, m)
     m.add_child(light_pollution_group)
+
+    # Clouds pollution view generation
+    clouds_pollution_group = folium.FeatureGroup(name="Clouds pollution", show=True)
+    Cloud(clouds_pollution_group, m)
+    m.add_child(clouds_pollution_group)
 
     # Aerosol pollution view generation
     aerosol_pollution_group = folium.FeatureGroup(name="Aerosol pollution", show=False, control=True)
     m.add_child(aerosol_pollution_group)
-
-    # Clouds pollution view generation
-    clouds_pollution_group = folium.FeatureGroup(name="Clouds pollution", show=False)
-    m.add_child(clouds_pollution_group)
 
     # ISS position view generation
     ISS_position_group = folium.FeatureGroup(name="ISS position", show=False)
@@ -70,8 +69,8 @@ def MapGenerate(filename):
     m.save(filename)
     return m
 
-def LightPollution(light_pollution_map):
 
+def LightPollution(light_pollution_map, map):
     # Load points data
     points = md.get_param('night_overview')
     res = np.split(points, [1, 2, 3], axis=1)
@@ -81,12 +80,39 @@ def LightPollution(light_pollution_map):
 
     # Setup colormap
     colors = ['black', 'gray', 'blue', 'green', 'yellow', 'orange', 'red', 'brown']
+    cm = branca.colormap.LinearColormap(colors, vmin=0, vmax=1).to_step(len(colors))
+    cm.caption = 'Light pollution'
+
+    gj = CreateGeoJson(x, y, z, colors)
+
+    light_pollution_map.add_child(gj)
+    map.add_child(cm)
+
+
+def Cloud(cloud_pollution_map, map):
+    # Load points data
+    points = md.get_param('cloudtop')
+    res = np.split(points, [1, 2, 3], axis=1)
+    x = list(flatten(res[1]))
+    y = list(flatten(res[0]))
+    z = list(flatten(res[2]))
+
+    # Setup colormap
+    colors = ['lightcyan', 'lightskyblue', 'skyblue', 'cornflowerblue', 'royalblue', 'blue', 'mediumblue', 'darkblue', 'indigo', 'darkmagenta']
+    cm = branca.colormap.LinearColormap(colors, vmin=0, vmax=1).to_step(len(colors))
+    cm.caption = 'Clouds pollution'
+
+    gj = CreateGeoJson(x, y, z, colors)
+    cloud_pollution_map.add_child(gj)
+    map.add_child(cm)
+
+
+def CreateGeoJson(x, y, z, colors):
     levels = len(colors)
-    cm = branca.colormap.LinearColormap(colors, vmin=0, vmax=1).to_step(levels)
 
     # Make a grid
-    x_arr = np.linspace(np.min(x), np.max(x), 700)
-    y_arr = np.linspace(np.min(y), np.max(y), 700)
+    x_arr = np.linspace(np.min(x), np.max(x), 500)
+    y_arr = np.linspace(np.min(y), np.max(y), 500)
     x_mesh, y_mesh = np.meshgrid(x_arr, y_arr)
 
     # Grid the elevation
@@ -97,8 +123,7 @@ def LightPollution(light_pollution_map):
     z_mesh = sp.ndimage.filters.gaussian_filter(z_mesh, sigma, mode='constant')
 
     # Create the contour
-    contourf = plt.contourf(x_mesh, y_mesh, z_mesh, levels, alpha=0.5, colors=colors, linestyles='None', vmin=0,
-                            vmax=1)
+    contourf = plt.contourf(x_mesh, y_mesh, z_mesh, levels, alpha=0.5, colors=colors, linestyles='None', vmin=0, vmax=1)
     # Convert matplotlib contourf to geojson
     geojson = geojsoncontour.contourf_to_geojson(
         contourf=contourf,
@@ -115,16 +140,11 @@ def LightPollution(light_pollution_map):
             'weight': x['properties']['stroke-width'],
             'fillColor': x['properties']['fill'],
             'opacity': 0.5,
-       })
+        })
 
-    # Add the colormap to the folium map for legend
-    cm.caption = 'Light pollution'
+    return m
 
-    light_pollution_map.add_child(m)
 
-    return cm
-
-    #light_pollution_map.add_child(folium.plugins.HeatMap(points, radius=10))
 
 def ISS(ISS_map):
     path = "https://api.wheretheiss.at/v1/satellites/25544/positions?timestamps="
@@ -175,12 +195,14 @@ def ISS(ISS_map):
                 folium.CircleMarker(location=[pos['latitude'], pos['longitude']], color="blue", fill_color="Blue",
                                     radius=7, popup=tip, tooltip=tooltip))
 
+
 def flatten(l):
     for el in l:
         if isinstance(el, Iterable) and not isinstance(el, (str, bytes)):
             yield from flatten(el)
         else:
             yield el
+
 
 class LatLngPopup(MacroElement):
     """

@@ -4,74 +4,61 @@ import json
 from pyresample.geometry import AreaDefinition
 import cv2
 
-SRC_PATH = './map/meteo_data/'
+import numpy as np
+import json
+import matplotlib.pyplot as plt
+from pyresample.geometry import AreaDefinition
+import cv2
 
-area_BY = AreaDefinition(
-    area_id='Belarus',
-    description='The region of Belarus (WGS 84 / UTM zone 35N Projection)',
-    projection='EPSG:32635',
-    proj_id='EPSG:32635',
-    width=2800,
-    height=2400,
-    area_extent=(
-        200000,
-        5650000,
-        900000,
-        6250000,
-    ))
-
-
-def value_fun_light(color_array):
-    return color_array[2] / 255.
+from . import lightAnal as anal
+from . import config as cfg
 
 
 def do_masking_light(img):
-    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    ifshift_mask = cv2.imread(cfg.FULL_PATH + 'testMask.tif', 0)
+    ifshift_mask = ifshift_mask.astype(np.float32) / 255
 
-    lower = np.array([28, 0, 50])  # temp solution
-    upper = np.array([32, 255, 255])
+    channel = img[:, :, 1]
+    channel = anal.fft_filter(channel=channel, mask=ifshift_mask)
+    result_img = np.dstack((channel, channel, channel))  # np.zeros((len(channel), len(channel[0])), dtype=np.uint8)
 
-    mask = cv2.inRange(hsv, lower, upper)
-    return cv2.bitwise_and(hsv, hsv, mask=mask)
+    return result_img
 
 
-def tifToArray(area_definition, image, value_func, value_threshold):
+def tif_to_array(image, param):
     """converts an .tif satellite image to an JSON lat, lon, val object.
         Parameters
         ----------
-        :param area_definition : AreaDefinition
-            AreaDefinition to an .tif image area
-            must be the same size as in area_definition declared (nonscaled)
+        :param param : dict
+            holds info needed according to parameters
         :param image : something after imread done
             File name of .tif image (extension included)
-        :param value_func : function
-            function that converts pixel array (3 values) to value (0..1)
-        :param value_threshold: double
-            holds a threshold, value is written to a JSON only if greater
         :return array [['lat', 'lon', 'val']]
         """
+    test_copy = image.copy()
 
     h, w, _ = image.shape
-    lons, lats = area_definition.get_lonlats()
+    lons, lats = cfg.area.get_lonlats()
 
     result = []
-
     for y in range(h):
         for x in range(w):
-            value = value_func(image[y, x])
-
-            if value > value_threshold:
+            value = param['value_func'](image[y, x])
+            if value > param['threshold']:  # does it work on all data?
                 result.append([
                     lats[y, x],
                     lons[y, x],
                     value
                 ])
+                test_copy[y, x] = [value*255, value*255, value*255]
+            else:
+                test_copy[y, x] = [0, 0, 0]
 
                 # jsonObj = {"val": value,
                 #            "lat": lats[y, x],
                 #            "lon": lons[y, x]}
                 # jsonResult.append(jsonObj)
-
+    cv2.imwrite(cfg.FULL_PATH + param['name'] + '_ff' + cfg.EXT, test_copy)
     return result
 
     # to file
@@ -87,28 +74,39 @@ def get_param(param_name):
     :return: array [['lat', 'lon', 'val']]
     """
 
-    img = cv2.imread(SRC_PATH + param_name + '.tif')
+    # The worst caching solution
+    if not np.array_equal(cfg.parameters[param_name]['lastArray'], []):
+        return cfg.parameters[param_name]['lastArray']
 
+    # get params
+    param = cfg.parameters[param_name]
+    # read image
+    img = cv2.imread(cfg.FULL_PATH + param['name'] + cfg.EXT)
+    # mask image out
     match param_name:
         case 'night_overview':
             # do masking (work image out)
-            res_img = do_masking_light(img)
-            # choose values
-            func = value_fun_light
-            value_threshold = 120. / 255.
-        case _:
-            return []
+            img = do_masking_light(img)
 
+    # general masking
+    mask = cv2.inRange(img, param['lower'], param['upper'])
+    img = cv2.bitwise_and(img, img, mask=mask)
+    # save temp mask and res
+    cv2.imwrite(cfg.FULL_PATH + param['name'] + '_mask' + cfg.EXT, mask)
+    cv2.imwrite(cfg.FULL_PATH + param['name'] + '_result' + cfg.EXT, img)
     # cvt to json
-    return tifToArray(area_definition=area_BY,
-                      image=res_img,
-                      value_func=func,
-                      value_threshold=value_threshold)
+    # Anc caching
+    cfg.parameters[param_name]['lastArray'] = tif_to_array(img, param)
+    return cfg.parameters[param_name]['lastArray']
 
 
 # (Example call)
 if __name__ == "__main__":
-    res = get_param('night_overview')
+
+    # res = get_param('night_overview')
+    # res = get_param('fog')
+    # res = get_param('dust')
+    res = get_param('cloudtop')
 
     for i in range(len(res)):
         print(res[i])
