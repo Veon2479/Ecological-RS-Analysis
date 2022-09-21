@@ -22,10 +22,8 @@ def starmap(request):
         if (not is_float(lat)) or (not is_float(lon)):
             lat = MINSK_LOCATION[0]
             lon = MINSK_LOCATION[1]
-    path = starmapgen(lat, lon, './map/templates/starmap/index.html')
-    path = '/starmap/example.jpg'
-    data = {"lat": lat, "lon": lon, "path": path}
-    return render(request, 'starmap/starmap.html', data)
+    starmapgen(lat, lon)
+    return render(request, 'starmap/starmap.html')
 
 
 def is_float(num):

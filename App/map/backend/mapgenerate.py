@@ -102,7 +102,7 @@ def Cloud(cloud_pollution_map, map):
     z = points[2]
 
     # Setup colormap
-    colors = ['lightcyan', 'lightskyblue', 'skyblue', 'cornflowerblue', 'royalblue', 'blue', 'mediumblue', 'darkblue', 'indigo', 'darkmagenta']
+    colors = ['white', 'lightcyan', 'lightskyblue', 'skyblue', 'cornflowerblue', 'royalblue', 'blue', 'mediumblue', 'darkblue', 'indigo', 'darkmagenta']
     cm = branca.colormap.LinearColormap(colors, vmin=0, vmax=1).to_step(len(colors))
     cm.caption = 'Clouds pollution'
 
@@ -119,7 +119,7 @@ def Dust(dust_pollution_map, map):
     z = points[2]
 
     # Setup colormap
-    colors = ['lemonchiffon', 'khaki', 'yellow', 'gold', 'orange', 'darkorange', 'orangered', 'red', 'firebrick', 'darkred']
+    colors = ['white', 'lemonchiffon', 'khaki', 'yellow', 'gold', 'orange', 'darkorange', 'orangered', 'red', 'firebrick', 'darkred']
     cm = branca.colormap.LinearColormap(colors, vmin=0, vmax=1).to_step(len(colors))
     cm.caption = 'Dust pollution'
 
@@ -138,7 +138,7 @@ def Fog(fog_pollution_map, map):
     z = points[2]
 
     # Setup colormap
-    colors = ['ghostwhite', 'thistle', 'plum', 'violet', 'm', 'fuchsia', 'magenta', 'orchid', 'purple', 'darkmagenta', 'indigo']
+    colors = ['white', 'ghostwhite', 'thistle', 'plum', 'violet', 'm', 'fuchsia', 'magenta', 'orchid', 'purple', 'darkmagenta', 'indigo']
     cm = branca.colormap.LinearColormap(colors, vmin=0, vmax=1).to_step(len(colors))
     cm.caption = 'Fog pollution'
 
