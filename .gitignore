@@ -192,3 +192,5 @@ khakaton/.idea/khakaton.iml
 *.iml
 *.iml
 *.xml
+
+/App/map/templates/map/index.html
