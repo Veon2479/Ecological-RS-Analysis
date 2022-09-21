@@ -19,10 +19,8 @@ area = AreaDefinition(
     ))
 
 SRC_PATH = os.path.dirname(os.path.realpath(__file__))
-REL_PATH = '\\App\\map\\meteo_data\\'
-FULL_PATH_A = (SRC_PATH + REL_PATH).replace('\\', '/')
-FULL_PATH = 'D:/BSUIR/5 sem/Digital twins/Ecological-RS-Analysis/App/map/meteo_data/'  # TODO fix this shit!
-TEST = FULL_PATH_A == FULL_PATH
+REL_PATH = '\\..\\meteo_data\\'
+FULL_PATH = (SRC_PATH + REL_PATH).replace('\\', '/')
 EXT = '.tif'
 
 parameters = dict(
