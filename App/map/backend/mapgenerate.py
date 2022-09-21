@@ -79,10 +79,9 @@ def MapGenerate(filename):
 def Light(light_pollution_map, map):
     # Load points data
     points = md.get_param('night_overview')
-    res = np.split(points, [1, 2, 3], axis=1)
-    x = list(flatten(res[1]))
-    y = list(flatten(res[0]))
-    z = list(flatten(res[2]))
+    x = points[1]
+    y = points[0]
+    z = points[2]
 
     # Setup colormap
     colors = ['black', 'gray', 'blue', 'green', 'yellow', 'orange', 'red', 'brown']
@@ -98,10 +97,9 @@ def Light(light_pollution_map, map):
 def Cloud(cloud_pollution_map, map):
     # Load points data
     points = md.get_param('cloudtop')
-    res = np.split(points, [1, 2, 3], axis=1)
-    x = list(flatten(res[1]))
-    y = list(flatten(res[0]))
-    z = list(flatten(res[2]))
+    x = points[1]
+    y = points[0]
+    z = points[2]
 
     # Setup colormap
     colors = ['lightcyan', 'lightskyblue', 'skyblue', 'cornflowerblue', 'royalblue', 'blue', 'mediumblue', 'darkblue', 'indigo', 'darkmagenta']
@@ -116,10 +114,9 @@ def Cloud(cloud_pollution_map, map):
 def Dust(dust_pollution_map, map):
     # Load points data
     points = md.get_param('dust')
-    res = np.split(points, [1, 2, 3], axis=1)
-    x = list(flatten(res[1]))
-    y = list(flatten(res[0]))
-    z = list(flatten(res[2]))
+    x = points[1]
+    y = points[0]
+    z = points[2]
 
     # Setup colormap
     colors = ['lemonchiffon', 'khaki', 'yellow', 'gold', 'orange', 'darkorange', 'orangered', 'red', 'firebrick', 'darkred']
@@ -136,10 +133,9 @@ def Fog(fog_pollution_map, map):
 
     # Load points data
     points = md.get_param('fog')
-    res = np.split(points, [1, 2, 3], axis=1)
-    x = list(flatten(res[1]))
-    y = list(flatten(res[0]))
-    z = list(flatten(res[2]))
+    x = points[1]
+    y = points[0]
+    z = points[2]
 
     # Setup colormap
     colors = ['ghostwhite', 'thistle', 'plum', 'violet', 'm', 'fuchsia', 'magenta', 'orchid', 'purple', 'darkmagenta', 'indigo']
