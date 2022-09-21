@@ -24,19 +24,21 @@ REL_PATH = '\\..\\meteo_data\\'
 FULL_PATH = (SRC_PATH + REL_PATH).replace('\\', '/')
 EXT = '.tif'
 
+ZT = 5  # zero threshold - this amount is held on image to zero it
+
 parameters = dict(
-    night_overview=dict(name='night_overview', lower=np.array([0, 75, 75]),
-                        upper=np.array([255, 255, 255]), threshold=1E-12, value_func=anal.value_fun_light,
-                        lastArray = []),
-    fog=dict(name='night_fog', lower=np.array([0, 10, 0]),
-             upper=np.array([255, 255, 255]), threshold=1E-12, value_func=anal.value_fun_fog,
-             lastArray = []),
-    dust=dict(name='dust', lower=np.array([140, 0, 180]),
-              upper=np.array([255, 140, 255]), threshold=1E-12, value_func=anal.value_fun_dust,
-              lastArray = []),
-    cloudtop=dict(name='cloudtop', lower=np.array([0, 114, 114]),
-                  upper=np.array([255, 255, 255]), threshold=1E-12, value_func=anal.value_fun_cloudtop,
-                  lastArray = [])
+    night_overview=dict(name='night_overview', lower=np.array([0, 75 - ZT, 75 - ZT]),
+                        upper=np.array([255, 255, 255]), threshold=75/255., value_func=anal.value_fun_light,
+                        lastArray=[]),
+    fog=dict(name='night_fog', lower=np.array([0, 10 - ZT, 0]),
+             upper=np.array([255, 255, 255]), threshold=10/255., value_func=anal.value_fun_fog,
+             lastArray=[]),
+    dust=dict(name='dust', lower=np.array([140 - ZT, 0, 180 - ZT]),
+              upper=np.array([255, 140 + ZT, 255]), threshold=0.0, value_func=anal.value_fun_dust,
+              lastArray=[]),
+    cloudtop=dict(name='cloudtop', lower=np.array([0, 114 - ZT, 114 - ZT]),
+                  upper=np.array([255, 255, 255]), threshold=0.0, value_func=anal.value_fun_cloudtop,
+                  lastArray=[])
 
     # dust=dict(name='dust', lower=np.array([199, 20, 133]),
     #               upper=np.array([255, 192, 203]), threshold=50)

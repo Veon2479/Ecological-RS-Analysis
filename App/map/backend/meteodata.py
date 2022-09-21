@@ -48,8 +48,8 @@ def tif_to_array(image, param):
 
     for y in range(h):
         for x in range(w):
-            value = param['value_func'](image[y, x])
-            if value > param['threshold']:  # does it work on all data?
+            value = param['value_func'](image[y, x], param['threshold'])
+            if value >= 0.0:  # does it work on all data?
                 res_lats.append(lats[y, x])
                 res_lons.append(lons[y, x])
                 res_vals.append(value)
