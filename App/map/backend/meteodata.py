@@ -12,6 +12,8 @@ import cv2
 
 from . import lightAnal as anal
 from . import config as cfg
+# import lightAnal as anal
+# import config as cfg
 
 
 def do_masking_light(img):
@@ -40,16 +42,16 @@ def tif_to_array(image, param):
     h, w, _ = image.shape
     lons, lats = cfg.area.get_lonlats()
 
-    result = []
+    res_lats = [], res_lons = [], res_vals = []
+
     for y in range(h):
         for x in range(w):
             value = param['value_func'](image[y, x])
             if value > param['threshold']:  # does it work on all data?
-                result.append([
-                    lats[y, x],
-                    lons[y, x],
-                    value
-                ])
+                res_lats.append(lats[y, x])
+                res_lons.append(lons[y, x])
+                res_vals.append(value)
+
                 test_copy[y, x] = [value*255, value*255, value*255]
             else:
                 test_copy[y, x] = [0, 0, 0]
@@ -59,7 +61,7 @@ def tif_to_array(image, param):
                 #            "lon": lons[y, x]}
                 # jsonResult.append(jsonObj)
     cv2.imwrite(cfg.FULL_PATH + param['name'] + '_ff' + cfg.EXT, test_copy)
-    return result
+    return [res_lats, res_lons, res_vals]
 
     # to file
     # f = open(output_path + ".json", "w+")

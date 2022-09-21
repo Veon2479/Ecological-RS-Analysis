@@ -2,6 +2,7 @@ import numpy as np
 from pyresample.geometry import AreaDefinition
 import cv2
 from . import lightAnal as anal
+# import lightAnal as anal
 import os
 
 area = AreaDefinition(
