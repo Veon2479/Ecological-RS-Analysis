@@ -42,7 +42,9 @@ def tif_to_array(image, param):
     h, w, _ = image.shape
     lons, lats = cfg.area.get_lonlats()
 
-    res_lats = [], res_lons = [], res_vals = []
+    res_lats = []
+    res_lons = []
+    res_vals = []
 
     for y in range(h):
         for x in range(w):
