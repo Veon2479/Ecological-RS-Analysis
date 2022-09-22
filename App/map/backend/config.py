@@ -49,46 +49,26 @@ parameters = dict(
 
 
 def get_all_data(lat, lon, rad):
-    data = dict.fromkeys(['night_overview', 'fog', 'dust', 'cloudtop'])
-    # finding size of parameter "matrix"
-    kx = 1
-    ky = 1
+
+    lat = float(lat)
+    lon = float(lon)
+    light = 0
+    dust = 0
+    fog = 0
+    clouds = np.empty((2*rad+1, 2*rad+1), dtype="float")
+
     i = 0
-    if math.isclose(parameters['fog']['lastArray'][0][0], parameters['fog']['lastArray'][0][1]): # pre-last 0 means lat
-        while not math.isclose(parameters['fog']['lastArray'][0][0], parameters['fog']['lastArray'][0][i]):
-            i += 1
-        ky = i + 1
+    tmp = parameters['fog']['lastArray']
+    while (not math.isclose(lat, tmp[0][i])) and (not math.isclose(lon, tmp[1][i])) and (i < len(tmp[0])):
+        i += 1
+
+    if i == len(tmp[0]):
+        for i in range(len(clouds)):
+            for j in range(len(clouds[i])):
+                clouds[i][j] = 0
     else:
-        while not math.isclose(parameters['fog']['lastArray'][1][0], parameters['fog']['lastArray'][1][i]):
-            i += 1
-        kx = i + 1
-    # [i*kx + j*ky] = [i, j]
-    i = 0
-    j = 0
-    # finding central element of result matrix
-    while not math.isclose(parameters['fog']['lastArray'][0][i], lat):
-        i += kx
-    while not math.isclose(parameters['fog']['lastArray'][1][i], lon):
-        j += ky
+        light = parameters['night_overview']['lastArray'][2][i]
+        dust = parameters['dust']['lastArray'][2][i]
+        fog = parameters['fog']['lastArray'][2][i]
 
-    # filling result matrix
-    i -= kx * rad
-    j -= ky * rad
-
-    for itI in range(2 * rad):
-        for itJ in range(2 * rad):
-            num = i * kx + j * ky
-            tmp = array(0, 0, 0, 0)
-            if (num >= 0) and (num < len(parameters['fog']['lastArray'][0])):
-                tmp = {parameters['night_overview']['lastArray'][2][num],
-                       parameters['fog']['lastArray'][2][num],
-                       parameters['dust']['lastArray'][2][num],
-                       parameters['cloudtop']['lastArray'][2][num]}
-            data['night_overview'][itI][itJ] = tmp[0]
-            data['fog'][itI][itJ] = tmp[1]
-            data['dust'][itI][itJ] = tmp[2]
-            data['cloudtop'][itI][itJ] = tmp[3]
-            j += ky
-        i += kx
-
-    return data
+    return light, dust, fog, clouds

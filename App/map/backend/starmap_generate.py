@@ -6,8 +6,7 @@ from .config import get_all_data
 
 # working with html page
 def map_generate(lat, lon):
-    # images_path = make_star_map(lat, lon)
-    images_path = './map/static/starmap/img/'
+    images_path = make_star_map(lat, lon)
     list_of_images = os.listdir(images_path)
 
     # Item template
@@ -36,4 +35,4 @@ def make_star_map(lat, lon):
 
     data = get_all_data(lat, lon, 5)
 
-    return 0
+    return './map/static/starmap/img/'
