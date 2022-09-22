@@ -1,5 +1,7 @@
-from config import get_all_data
+from . import config
 import os
+
+from .config import get_all_data
 
 
 # working with html page
