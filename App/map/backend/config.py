@@ -1,4 +1,7 @@
+import math
+
 import numpy as np
+from numpy import array
 from pyresample.geometry import AreaDefinition
 import cv2
 from . import lightAnal as anal
@@ -43,3 +46,49 @@ parameters = dict(
     # dust=dict(name='dust', lower=np.array([199, 20, 133]),
     #               upper=np.array([255, 192, 203]), threshold=50)
 )
+
+
+def get_all_data(lat, lon, rad):
+    data = dict.fromkeys(['night_overview', 'fog', 'dust', 'cloudtop'])
+    # finding size of parameter "matrix"
+    kx = 1
+    ky = 1
+    i = 0
+    if math.isclose(parameters['fog']['lastArray'][0][0], parameters['fog']['lastArray'][0][1]): # pre-last 0 means lat
+        while not math.isclose(parameters['fog']['lastArray'][0][0], parameters['fog']['lastArray'][0][i]):
+            i += 1
+        ky = i
+    else:
+        while not math.isclose(parameters['fog']['lastArray'][1][0], parameters['fog']['lastArray'][1][i]):
+            i += 1
+        kx = i
+    # [i*kx + j*ky] = [i, j]
+    i = 0
+    j = 0
+    # finding central element of result matrix
+    while not math.isclose(parameters['fog']['lastArray'][0][i], lat):
+        i += kx
+    while not math.isclose(parameters['fog']['lastArray'][1][i], lon):
+        j += ky
+
+    # filling result matrix
+    i -= kx * rad
+    j -= ky * rad
+
+    for itI in range(2 * rad):
+        for itJ in range(2 * rad):
+            num = i * kx + j * ky
+            tmp = array(0, 0, 0, 0)
+            if (num >= 0) and (num < len(parameters['fog']['lastArray'][0])):
+                tmp = {parameters['night_overview']['lastArray'][2][num],
+                       parameters['fog']['lastArray'][2][num],
+                       parameters['dust']['lastArray'][2][num],
+                       parameters['cloudtop']['lastArray'][2][num]}
+            data['night_overview'][itI][itJ] = tmp[0]
+            data['fog'][itI][itJ] = tmp[1]
+            data['dust'][itI][itJ] = tmp[2]
+            data['cloudtop'][itI][itJ] = tmp[3]
+            j += ky
+        i += kx
+
+    return data
