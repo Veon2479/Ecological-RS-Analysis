@@ -57,11 +57,11 @@ def get_all_data(lat, lon, rad):
     if math.isclose(parameters['fog']['lastArray'][0][0], parameters['fog']['lastArray'][0][1]): # pre-last 0 means lat
         while not math.isclose(parameters['fog']['lastArray'][0][0], parameters['fog']['lastArray'][0][i]):
             i += 1
-        ky = i
+        ky = i + 1
     else:
         while not math.isclose(parameters['fog']['lastArray'][1][0], parameters['fog']['lastArray'][1][i]):
             i += 1
-        kx = i
+        kx = i + 1
     # [i*kx + j*ky] = [i, j]
     i = 0
     j = 0
