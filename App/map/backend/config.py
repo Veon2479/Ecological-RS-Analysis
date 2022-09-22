@@ -1,4 +1,5 @@
 import math
+from typing import List, Set, Any
 
 import numpy as np
 from numpy import array
@@ -31,10 +32,10 @@ ZT = 5  # zero threshold - this amount is held on image to zero it
 
 parameters = dict(
     night_overview=dict(name='night_overview', lower=np.array([0, 75 - ZT, 75 - ZT]),
-                        upper=np.array([255, 255, 255]), threshold=75/255., value_func=anal.value_fun_light,
+                        upper=np.array([255, 255, 255]), threshold=75 / 255., value_func=anal.value_fun_light,
                         lastArray=[]),
     fog=dict(name='night_fog', lower=np.array([0, 10 - ZT, 0]),
-             upper=np.array([255, 255, 255]), threshold=10/255., value_func=anal.value_fun_fog,
+             upper=np.array([255, 255, 255]), threshold=10 / 255., value_func=anal.value_fun_fog,
              lastArray=[]),
     dust=dict(name='dust', lower=np.array([140 - ZT, 0, 180 - ZT]),
               upper=np.array([255, 140 + ZT, 255]), threshold=0.0, value_func=anal.value_fun_dust,
@@ -49,26 +50,67 @@ parameters = dict(
 
 
 def get_all_data(lat, lon, rad):
-
     lat = float(lat)
     lon = float(lon)
-    light = 0
     dust = 0
     fog = 0
-    clouds = np.empty((2*rad+1, 2*rad+1), dtype="float")
+    light = np.empty((2 * rad + 1, 2 * rad + 1), dtype="float")
+    clouds = np.empty((2 * rad + 1, 2 * rad + 1), dtype="float")
 
     i = 0
     tmp = parameters['fog']['lastArray']
-    while (not math.isclose(lat, tmp[0][i])) and (not math.isclose(lon, tmp[1][i])) and (i < len(tmp[0])):
+    while (i < len(tmp[0]) and not math.isclose(lat, tmp[0][i])) and (not math.isclose(lon, tmp[1][i])):
         i += 1
 
+    k = 0
+    j = 0
     if i == len(tmp[0]):
-        for i in range(len(clouds)):
-            for j in range(len(clouds[i])):
-                clouds[i][j] = 0
+        for k in range(0, len(clouds)):
+            for j in range(0, len(clouds[k])):
+                clouds[k][j] = 0
+                light[k][j] = 0
     else:
-        light = parameters['night_overview']['lastArray'][2][i]
         dust = parameters['dust']['lastArray'][2][i]
         fog = parameters['fog']['lastArray'][2][i]
+
+        cloud_data = parameters['cloudtop']['lastArray']
+        light_data = parameters['night_overview']['lastArray']
+
+        latlist = list()
+        for j in range(0, len(cloud_data[0])):
+            if math.isclose(lat, cloud_data[0][j]):
+                latlist.append({float(cloud_data[0][j]), float(cloud_data[1][j]),
+                                float(cloud_data[2][j]), float(light_data[2][j])})
+        latlist.sort(key=lambda row: row[0])
+
+        j = 0
+        while (j < len(latlist)) and (not math.isclose(lon, float(latlist[j][1]))):
+            j += 1
+
+        for k in range(0, 2 * rad + 1):
+            if 0 <= (j - rad + k) < len(latlist):
+                clouds[k][rad + 1] = latlist[j - rad + k][2]
+                clouds[k][rad + 1] = latlist[j - rad + k][3]
+
+        for k in range(0, 2 * rad + 1):
+            if k != rad + 1:
+                lonlist = list()
+
+                for q in range(0, len(cloud_data[1])):
+                    if 0 <= j - rad + q < len(latlist):
+                        if math.isclose(float(latlist[j - rad + q][1]), cloud_data[1][q]):
+                            lonlist.append({float(cloud_data[0][q]), float(cloud_data[1][q]),
+                                            float(cloud_data[2][q]), float(light_data[2][q])})
+                lonlist.sort(key=lambda row: row[0])
+
+                z = 0
+                if 0 <= j - rad + k < len(latlist):
+                    while (z < len(lonlist)) and (not math.isclose(float(latlist[j - rad + k][0]), float(lonlist[z][0]))):
+                        z += 1
+
+                for q in range(0, 2 * rad + 1):
+                    if q != rad + 1 and 0 <= z - rad + q < len(lonlist):
+                        clouds[k][q] = lonlist[z - rad + q][2]
+                        light[k][q] = lonlist[z - rad + q][3]
 
     return light, dust, fog, clouds
