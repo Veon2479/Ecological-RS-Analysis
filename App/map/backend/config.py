@@ -59,9 +59,10 @@ def get_all_data(lat, lon, rad):
 
     i = 0
     tmp = parameters['fog']['lastArray']
-    while (i < len(tmp[0]) and not math.isclose(lat, tmp[0][i])) and (not math.isclose(lon, tmp[1][i])):
+    while (i < len(tmp[0]) and (not math.isclose(lat, float(tmp[0][i]), rel_tol=1e-3))) and \
+            (not math.isclose(lon, float(tmp[1][i]), rel_tol=1e-3)):
         i += 1
-
+    print(i)
     k = 0
     j = 0
     if i == len(tmp[0]):
@@ -69,6 +70,7 @@ def get_all_data(lat, lon, rad):
             for j in range(0, len(clouds[k])):
                 clouds[k][j] = 0
                 light[k][j] = 0
+        print("nope")
     else:
         dust = parameters['dust']['lastArray'][2][i]
         fog = parameters['fog']['lastArray'][2][i]
@@ -78,13 +80,14 @@ def get_all_data(lat, lon, rad):
 
         latlist = list()
         for j in range(0, len(cloud_data[0])):
-            if math.isclose(lat, cloud_data[0][j]):
+            if math.isclose(lat, cloud_data[0][j], rel_tol=1e-3):
                 latlist.append({float(cloud_data[0][j]), float(cloud_data[1][j]),
                                 float(cloud_data[2][j]), float(light_data[2][j])})
-        latlist.sort(key=lambda row: row[0])
+
+        latlist.sort(key=lambda t: t[0])
 
         j = 0
-        while (j < len(latlist)) and (not math.isclose(lon, float(latlist[j][1]))):
+        while (j < len(latlist)) and (not math.isclose(lon, float(latlist[j][1]), rel_tol=1e-3)):
             j += 1
 
         for k in range(0, 2 * rad + 1):
@@ -98,19 +101,25 @@ def get_all_data(lat, lon, rad):
 
                 for q in range(0, len(cloud_data[1])):
                     if 0 <= j - rad + q < len(latlist):
-                        if math.isclose(float(latlist[j - rad + q][1]), cloud_data[1][q]):
+                        if math.isclose(float(latlist[j - rad + q][1]), cloud_data[1][q], rel_tol=1e-3):
                             lonlist.append({float(cloud_data[0][q]), float(cloud_data[1][q]),
                                             float(cloud_data[2][q]), float(light_data[2][q])})
                 lonlist.sort(key=lambda row: row[0])
 
                 z = 0
                 if 0 <= j - rad + k < len(latlist):
-                    while (z < len(lonlist)) and (not math.isclose(float(latlist[j - rad + k][0]), float(lonlist[z][0]))):
+                    while (z < len(lonlist)) and \
+                            (not math.isclose(float(latlist[j - rad + k][0]), float(lonlist[z][0]), rel_tol=1e-3)):
                         z += 1
 
                 for q in range(0, 2 * rad + 1):
                     if q != rad + 1 and 0 <= z - rad + q < len(lonlist):
                         clouds[k][q] = lonlist[z - rad + q][2]
                         light[k][q] = lonlist[z - rad + q][3]
+
+    print("dust is ", dust)
+    print("fog is ", fog)
+    print("clouds are ", clouds[rad + 1][rad + 1])
+    print("light are ", light[rad + 1][rad + 1])
 
     return light, dust, fog, clouds
